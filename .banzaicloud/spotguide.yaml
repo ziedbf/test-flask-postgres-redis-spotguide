@@ -1,0 +1,140 @@
+apiVersion: v1
+name: 'Flask with Postgres databases and redis for cache'
+description: 'Spotguide for Flask applications with Postgres database and redis for cache'
+tags: ['Flask', 'Postgres', 'Redis', 'Application']
+resources:
+  sumCpu: 3
+  sumMem: 4
+  filters: []
+  sameSize: false
+  onDemandPct: 100
+  minNodes: 2
+  maxNodes: 4
+questions:
+  - type: secret
+    dataType: password
+    name: docker-hub
+    group: Docker Hub (image repository)
+    description: As part of the CI/CD process a docker image with name <organization>/<repository>:<commit sha> will be built and pushed to Docker Hub (https://hub.docker.com)
+    required:
+      input: true
+      username: true
+      password: true
+    tags:
+      - app:docker
+    targets:
+      - build_image.secretFrom.DOCKER_USERNAME.name
+      - build_image.secretFrom.DOCKER_PASSWORD.name
+  - type: secret
+    dataType: password
+    name: postgresql
+    label: User secret
+    group: Postgres
+    order: 1
+    required:
+      username: true
+    default:
+      username: postgresql
+    tags:
+      - app:postgresql
+    targets:
+      - install_postgresql_user_secret.clusterSecret.sourceSecretName
+  - type: pipeline
+    dataType: string
+    label: Postgres database
+    default: flask-application
+    group: Postgres
+    required: true
+    order: 2
+    targets:
+      - deploy_application.deployment.values.postgresql.postgresqlDatabase
+  - type: secret
+    dataType: password
+    name: redis
+    label: User secret
+    group: Redis
+    order: 1
+    required:
+      username: true
+    default:
+      username: redis
+    tags:
+      - app:redis
+    targets:
+      - install_redis_user_secret.clusterSecret.sourceSecretName
+  - type: pipeline
+    dataType: string
+    label: Redis database number
+    default: 0
+    group: Redis
+    required: true
+    order: 2
+    targets:
+      - deploy_application.deployment.values.redis.redisDatabase
+  - type: pipeline
+    key: application_resources
+    group: Resources
+    dataType: boolean
+    label: Customize application resources
+    default: false
+    order: 1
+  - type: pipeline
+    dataType: string
+    label: Memory request
+    default: 128Mi
+    group: Resources
+    pattern: ^\d+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+    description: Minimum amount of memory the Node.js container needs
+    required: true
+    order: 2
+    targets:
+      - deploy_application.deployment.Values.deployment.resources.requests.memory
+    showIf:
+      properties:
+        application_resources:
+          const: true
+  - type: pipeline
+    dataType: string
+    label: Memory limit
+    default: 512Mi
+    group: Resources
+    pattern: ^\d+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+    description: Maximum amount of memory the Node.js container can use
+    required: true
+    order: 3
+    targets:
+      - deploy_application.deployment.Values.deployment.resources.limits.memory
+    showIf:
+      properties:
+        application_resources:
+          const: true
+  - type: pipeline
+    dataType: string
+    label: CPU request
+    default: 250m
+    group: Resources
+    pattern: ^\d+(\.?\d+|m)?$
+    description: Minimum amount of CPU the Flask container needs
+    required: true
+    order: 4
+    targets:
+      - deploy_application.deployment.Values.deployment.resources.requests.cpu
+    showIf:
+      properties:
+        application_resources:
+          const: true
+  - type: pipeline
+    dataType: string
+    label: CPU limit
+    default: 500m
+    group: Resources
+    pattern: ^\d+(\.?\d+|m)?$
+    description: Maximum amount of CPU the Flask container can use
+    required: true
+    order: 5
+    targets:
+      - deploy_application.deployment.Values.deployment.resources.limits.cpu
+    showIf:
+      properties:
+        application_resources:
+          const: true

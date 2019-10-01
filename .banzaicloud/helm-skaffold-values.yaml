@@ -1,0 +1,48 @@
+pipeline-monitor:
+  enabled: true
+  grafana:
+    grafana.ini:
+      server:
+        root_url: "%(protocol)s://%(domain)s/"
+      auth.anonymous:
+        enabled: true
+        org_name: "Main Org."
+        org_role: "Admin"
+    ingress:
+      annotations:
+        traefik.ingress.kubernetes.io/redirect-permanent: "false"
+        traefik.ingress.kubernetes.io/ssl-redirect: "false"
+        traefik.ingress.kubernetes.io/redirect-regex: ""
+        traefik.ingress.kubernetes.io/redirect-replacement: ""
+      path: /
+      hosts:
+        - grafana.127.0.0.1.xip.io
+pipeline-ingress:
+  enabled: true
+postgresql:
+  postgresqlUsername: user
+  postgresqlPassword: pass
+  postgresqlDatabase: flask-application
+  metrics:
+    enabled: false
+  replicaSet:
+    enabled: false
+redis:
+  password: pass
+  metrics:
+    enabled: false
+  replicaSet:
+    enabled: false
+ingress:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  hosts:
+    - application.127.0.0.1.xip.io
+deployment:
+  image:
+    pullPolicy: IfNotPresent
+  autoscaling:
+    enabled: false
+  env:
+    - name: LOGGER_LEVEL
+      value: debug

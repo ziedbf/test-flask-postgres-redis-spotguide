@@ -1,0 +1,32 @@
+# Skaffold definition (https://github.com/GoogleContainerTools/skaffold)
+apiVersion: skaffold/v1beta6
+kind: Config
+build:
+  # tagPolicy determines how skaffold is going to tag your images.
+  # The policy can be `gitCommit`, `sha256` or `envTemplate`.
+  tagPolicy:
+    # Tag the image with the git commit of your current repository.
+    sha256: {}
+  # artifacts is a list of the actual images you're going to be building
+  # you can include as many as you want here.
+  artifacts:
+    # The name of the image to be built.
+    - image: spotguide-flask-postgres-redis
+      # The path to your dockerfile context.
+      context: ../
+# The deploy section has all the information needed to deploy. Along with build:
+# it is a required section.
+deploy:
+  helm:
+    # helm releases to deploy.
+    releases:
+      - name: spotguide-flask-postgres-redis
+        namespace: default
+        chartPath: charts/spotguide-flask-postgres-redis
+        valuesFiles:
+          - helm-skaffold-values.yaml
+        values:
+          deployment.image: spotguide-flask-postgres-redis
+        wait: true
+        imageStrategy:
+          helm: {}
