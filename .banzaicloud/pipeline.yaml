@@ -14,7 +14,7 @@ pipeline:
   build_image:
     dockerfile: Dockerfile
     image: banzaicloud/kaniko-plugin
-    repo: '{{ .CICD_REPO }}'
+    repo: 'ziedbouf/{{ .CICD_REPO_NAME }}'
     secretFrom:
       DOCKER_PASSWORD:
         keyRef: password
@@ -78,7 +78,7 @@ pipeline:
         deployment:
           image:
             pullPolicy: Always
-            repository: '{{ .CICD_REPO }}'
+            repository: 'ziedbouf/{{ .CICD_REPO_NAME }}'
             tag: '{{ trunc 7 .CICD_COMMIT_SHA }}'
         ingress:
           annotations:
@@ -87,7 +87,7 @@ pipeline:
             traefik.ingress.kubernetes.io/redirect-regex: ^http://(.*)
             traefik.ingress.kubernetes.io/redirect-replacement: https://$1
           hosts:
-          - '{{ lower (printf "app-%s-%s.%s.%s" .CICD_REPO_NAME (.CLUSTER_NAME | sha1sum | trunc 10) .ORG_NAME .DOMAIN_NAME) }}'
+          - '{{ lower (printf "app-%s-%s.%s.%s" .CICD_REPO_NAME (.CLUSTER_NAME | sha1sum | trunc 10) "moznsystems" .DOMAIN_NAME) }}'
         postgresql:
           existingSecret: '{{ .CICD_REPO_NAME }}-postgresql'
           metrics:
