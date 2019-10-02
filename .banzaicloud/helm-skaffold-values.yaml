@@ -44,5 +44,7 @@ deployment:
   autoscaling:
     enabled: false
   env:
-    - name: LOGGER_LEVEL
-      value: debug
+    - name: FLASK_APP
+      value: manage.py
+    - name: FLASK_ENV
+      value: production

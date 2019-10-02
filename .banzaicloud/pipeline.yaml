@@ -6,11 +6,16 @@ pipeline:
       cloud: amazon
       name: eks-cluster
     action: EnsureCluster
+  
   test:
     image: python:3.6
+    environment:
+      - FLASK_APP=manage.py
+      - FLASK_ENV=development
     commands:
     - pip install --no-cache-dir -r requirements.txt
     - python manage.py test
+  
   build_image:
     dockerfile: Dockerfile
     image: banzaicloud/kaniko-plugin
@@ -23,6 +28,7 @@ pipeline:
         keyRef: username
         name: docker-hub
     tags: '{{ trunc 7 .CICD_COMMIT_SHA }}'
+  
   package_application:
     when:
       branch:
@@ -33,11 +39,12 @@ pipeline:
     - helm init -c
     - helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
     - helm package ./.banzaicloud/charts/spotguide-flask-postgres-redis
+  
   install_postgresql_user_secret:
     action: InstallSecret
     clusterSecret:
-      merge: true
       name: '{{ .CICD_REPO_NAME }}-postgresql'
+      merge: true
       namespace: default
       sourceSecretName: postgresql
       spec:
@@ -50,6 +57,7 @@ pipeline:
       branch:
         include:
         - master
+  
   install_redis_user_secret:
     action: InstallSecret
     clusterSecret:
@@ -67,6 +75,7 @@ pipeline:
       branch:
         include:
         - master
+  
   deploy_application:
     action: EnsureDeployment
     deployment:
