@@ -11,7 +11,7 @@ banzaicloud:
     location:
 
 pipeline-monitor:
-  enabled: true
+  enabled: false
 
 pipeline-ingress:
   enabled: false
