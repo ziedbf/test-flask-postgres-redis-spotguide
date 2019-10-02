@@ -47,4 +47,4 @@ deployment:
     - name: FLASK_APP
       value: manage.py
     - name: FLASK_ENV
-      value: production
+      value: development
