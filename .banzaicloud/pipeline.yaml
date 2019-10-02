@@ -14,7 +14,7 @@ pipeline:
       - FLASK_ENV=development
     commands:
     - pip install --no-cache-dir -r requirements.txt
-    - python manage.py test
+    - flask test
   
   build_image:
     dockerfile: Dockerfile
